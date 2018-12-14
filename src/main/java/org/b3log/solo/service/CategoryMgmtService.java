@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 package org.b3log.solo.service;
 
 import org.b3log.latke.Keys;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.repository.*;

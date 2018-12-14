@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -99,7 +99,7 @@ admin.articleList = {
                     var topClass = articles[i].articlePutTop ? Label.cancelPutTopLabel : Label.putTopLabel;
                     articleData[i].expendRow = "<a target='_blank' href='" + latkeConfig.servePath + articles[i].articlePermalink + "'>" + Label.viewLabel + "</a>  \
                                 <a href='javascript:void(0)' onclick=\"admin.article.get('" + articles[i].oId + "', true)\">" + Label.updateLabel + "</a>  \
-                                <a href='javascript:void(0)' onclick=\"admin.article.del('" + articles[i].oId + "', 'article', '" + articles[i].articleTitle + "')\">" + Label.removeLabel + "</a>  \
+                                <a href='javascript:void(0)' onclick=\"admin.article.del('" + articles[i].oId + "', 'article', '" + encodeURIComponent(articles[i].articleTitle) + "')\">" + Label.removeLabel + "</a>  \
                                 <a href='javascript:void(0)' onclick=\"admin.articleList.popTop(this, '" + articles[i].oId + "')\">" + topClass + "</a>  \
                                 <a href='javascript:void(0)' onclick=\"admin.comment.open('" + articles[i].oId + "', 'article')\">" + Label.commentLabel + "</a>";
                 }

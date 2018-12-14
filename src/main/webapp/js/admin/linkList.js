@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
  *
  * @author <a href="http://vanessa.b3log.org">Liyuan Li</a>
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.5, Apr 5, 2018
+ * @version 1.1.2.1, Oct 24, 2018
  */
 
 /* link-list 相关操作 */
@@ -61,6 +61,7 @@ admin.linkList = {
         this.getList(page);
         
         $("#updateLink").dialog({
+            title:  $("#updateLink").data('title'),
             width: 700,
             height: 290,
             "modal": true,
@@ -124,7 +125,7 @@ admin.linkList = {
                     linkData[i].linkDescription = links[i].linkDescription;
                     linkData[i].expendRow = "<span><a href='" + links[i].linkAddress + "' target='_blank'>" + Label.viewLabel + "</a>  \
                                 <a href='javascript:void(0)' onclick=\"admin.linkList.get('" + links[i].oId + "')\">" + Label.updateLabel + "</a>\
-                                <a href='javascript:void(0)' onclick=\"admin.linkList.del('" + links[i].oId + "', '" + links[i].linkTitle + "')\">" + Label.removeLabel + "</a></span>";
+                                <a href='javascript:void(0)' onclick=\"admin.linkList.del('" + links[i].oId + "', '" + encodeURIComponent(links[i].linkTitle) + "')\">" + Label.removeLabel + "</a></span>";
                 }
 
                 that.tablePagination.updateTablePagination(linkData, pageNum, result.pagination);
@@ -254,7 +255,7 @@ admin.linkList = {
      * @title 链接标题
      */
     del: function (id, title) {
-        var isDelete = confirm(Label.confirmRemoveLabel + Label.permalinkLabel + '"' + title + '"?');
+        var isDelete = confirm(Label.confirmRemoveLabel + Label.permalinkLabel + '"' + Util.htmlDecode(title) + '"?');
         if (isDelete) {
             $("#loadMsg").text(Label.loadingLabel);
             $("#tipMsg").text("");

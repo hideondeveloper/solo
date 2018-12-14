@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,10 @@ package org.b3log.solo.service;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.Keys;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
-import org.b3log.latke.model.User;
-import org.b3log.latke.repository.jdbc.JdbcRepository;
 import org.b3log.latke.service.annotation.Service;
 import org.b3log.latke.util.Strings;
 import org.b3log.solo.SoloServletListener;
@@ -40,7 +39,7 @@ import java.util.*;
  * Import service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.1, Nov 11, 2017
+ * @version 1.0.1.3, Oct 31, 2018
  * @since 2.2.0
  */
 @Service
@@ -74,76 +73,72 @@ public class ImportService {
      */
     public void importMarkdowns() {
         new Thread(() -> {
+            final ServletContext servletContext = SoloServletListener.getServletContext();
+            final String markdownsPath = servletContext.getRealPath("markdowns");
+            LOGGER.debug("Import directory [" + markdownsPath + "]");
+
+            JSONObject admin;
             try {
-                final ServletContext servletContext = SoloServletListener.getServletContext();
-                final String markdownsPath = servletContext.getRealPath("markdowns");
-                LOGGER.debug("Import directory [" + markdownsPath + "]");
-
-                JSONObject admin;
-                try {
-                    admin = userQueryService.getAdmin();
-                } catch (final Exception e) {
-                    return;
-                }
-
-                if (null == admin) { // Not init yet
-                    return;
-                }
-
-                final String adminEmail = admin.optString(User.USER_EMAIL);
-
-                int succCnt = 0, failCnt = 0;
-                final Set<String> failSet = new TreeSet<>();
-                final Collection<File> mds = FileUtils.listFiles(new File(markdownsPath), new String[]{"md"}, true);
-                if (null == mds || mds.isEmpty()) {
-                    return;
-                }
-
-                for (final File md : mds) {
-                    final String fileName = md.getName();
-                    if (StringUtils.equalsIgnoreCase(fileName, "README.md")) {
-                        continue;
-                    }
-
-                    try {
-                        final String fileContent = FileUtils.readFileToString(md, "UTF-8");
-                        final JSONObject article = parseArticle(fileName, fileContent);
-                        article.put(Article.ARTICLE_AUTHOR_EMAIL, adminEmail);
-
-                        final JSONObject request = new JSONObject();
-                        request.put(Article.ARTICLE, article);
-
-                        final String id = articleMgmtService.addArticle(request);
-                        FileUtils.moveFile(md, new File(md.getPath() + "." + id));
-                        LOGGER.info("Imported article [" + article.optString(Article.ARTICLE_TITLE) + "]");
-                        succCnt++;
-                    } catch (final Exception e) {
-                        LOGGER.log(Level.ERROR, "Import file [" + fileName + "] failed", e);
-
-                        failCnt++;
-                        failSet.add(fileName);
-                    }
-                }
-
-                if (0 == succCnt && 0 == failCnt) {
-                    return;
-                }
-
-                final StringBuilder logBuilder = new StringBuilder();
-                logBuilder.append("[").append(succCnt).append("] imported, [").append(failCnt).append("] failed");
-                if (failCnt > 0) {
-                    logBuilder.append(": ").append(Strings.LINE_SEPARATOR);
-
-                    for (final String fail : failSet) {
-                        logBuilder.append("    ").append(fail).append(Strings.LINE_SEPARATOR);
-                    }
-                } else {
-                    logBuilder.append(" :p");
-                }
-                LOGGER.info(logBuilder.toString());
-            } finally {
-                JdbcRepository.dispose();
+                admin = userQueryService.getAdmin();
+            } catch (final Exception e) {
+                return;
             }
+
+            if (null == admin) { // Not init yet
+                return;
+            }
+
+            final String adminId = admin.optString(Keys.OBJECT_ID);
+
+            int succCnt = 0, failCnt = 0;
+            final Set<String> failSet = new TreeSet<>();
+            final Collection<File> mds = FileUtils.listFiles(new File(markdownsPath), new String[]{"md"}, true);
+            if (null == mds || mds.isEmpty()) {
+                return;
+            }
+
+            for (final File md : mds) {
+                final String fileName = md.getName();
+                if (StringUtils.equalsIgnoreCase(fileName, "README.md")) {
+                    continue;
+                }
+
+                try {
+                    final String fileContent = FileUtils.readFileToString(md, "UTF-8");
+                    final JSONObject article = parseArticle(fileName, fileContent);
+                    article.put(Article.ARTICLE_AUTHOR_ID, adminId);
+
+                    final JSONObject request = new JSONObject();
+                    request.put(Article.ARTICLE, article);
+
+                    final String id = articleMgmtService.addArticle(request);
+                    FileUtils.moveFile(md, new File(md.getPath() + "." + id));
+                    LOGGER.info("Imported article [" + article.optString(Article.ARTICLE_TITLE) + "]");
+                    succCnt++;
+                } catch (final Exception e) {
+                    LOGGER.log(Level.ERROR, "Import file [" + fileName + "] failed", e);
+
+                    failCnt++;
+                    failSet.add(fileName);
+                }
+            }
+
+            if (0 == succCnt && 0 == failCnt) {
+                return;
+            }
+
+            final StringBuilder logBuilder = new StringBuilder();
+            logBuilder.append("[").append(succCnt).append("] imported, [").append(failCnt).append("] failed");
+            if (failCnt > 0) {
+                logBuilder.append(": ").append(Strings.LINE_SEPARATOR);
+
+                for (final String fail : failSet) {
+                    logBuilder.append("    ").append(fail).append(Strings.LINE_SEPARATOR);
+                }
+            } else {
+                logBuilder.append(" :p");
+            }
+            LOGGER.info(logBuilder.toString());
         }).start();
     }
 
@@ -191,7 +186,7 @@ public class ImportService {
         ret.put(Article.ARTICLE_ABSTRACT, abs);
 
         final Date date = parseDate(elems);
-        ret.put(Article.ARTICLE_CREATE_DATE, date);
+        ret.put(Article.ARTICLE_CREATED, date.getTime());
 
         final String permalink = (String) elems.get("permalink");
         if (StringUtils.isNotBlank(permalink)) {

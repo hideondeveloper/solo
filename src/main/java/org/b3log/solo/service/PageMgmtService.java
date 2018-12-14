@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,9 @@
  */
 package org.b3log.solo.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.Keys;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.repository.RepositoryException;
@@ -27,13 +28,11 @@ import org.b3log.latke.service.LangPropsService;
 import org.b3log.latke.service.ServiceException;
 import org.b3log.latke.service.annotation.Service;
 import org.b3log.latke.util.Ids;
-import org.b3log.latke.util.Strings;
 import org.b3log.solo.model.Comment;
 import org.b3log.solo.model.Option;
 import org.b3log.solo.model.Page;
 import org.b3log.solo.repository.CommentRepository;
 import org.b3log.solo.repository.PageRepository;
-import org.b3log.solo.util.Comments;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -134,7 +133,7 @@ public class PageMgmtService {
             final String oldPermalink = oldPage.getString(Page.PAGE_PERMALINK);
 
             if (!oldPermalink.equals(permalink)) {
-                if (Strings.isEmptyOrNull(permalink)) {
+                if (StringUtils.isBlank(permalink)) {
                     permalink = "/pages/" + pageId + ".html";
                 }
 
@@ -247,7 +246,7 @@ public class PageMgmtService {
             page.put(Page.PAGE_ORDER, maxOrder + 1);
 
             String permalink = page.optString(Page.PAGE_PERMALINK);
-            if (Strings.isEmptyOrNull(permalink)) {
+            if (StringUtils.isBlank(permalink)) {
                 permalink = "/pages/" + Ids.genTimeMillisId() + ".html";
             }
 
@@ -390,17 +389,14 @@ public class PageMgmtService {
         final String pageId = page.getString(Keys.OBJECT_ID);
 
         final List<JSONObject> comments = commentRepository.getComments(pageId, 1, Integer.MAX_VALUE);
-
         for (final JSONObject comment : comments) {
             final String commentId = comment.getString(Keys.OBJECT_ID);
-            final String sharpURL = Comments.getCommentSharpURLForPage(page, commentId);
-
+            final String sharpURL = Comment.getCommentSharpURLForPage(page, commentId);
             comment.put(Comment.COMMENT_SHARP_URL, sharpURL);
-
-            if (Strings.isEmptyOrNull(comment.optString(Comment.COMMENT_ORIGINAL_COMMENT_ID))) {
+            if (StringUtils.isBlank(comment.optString(Comment.COMMENT_ORIGINAL_COMMENT_ID))) {
                 comment.put(Comment.COMMENT_ORIGINAL_COMMENT_ID, "");
             }
-            if (Strings.isEmptyOrNull(comment.optString(Comment.COMMENT_ORIGINAL_COMMENT_NAME))) {
+            if (StringUtils.isBlank(comment.optString(Comment.COMMENT_ORIGINAL_COMMENT_NAME))) {
                 comment.put(Comment.COMMENT_ORIGINAL_COMMENT_NAME, "");
             }
 

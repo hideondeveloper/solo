@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 package org.b3log.solo.service;
 
 import org.b3log.latke.Keys;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.model.Pagination;
@@ -43,7 +43,7 @@ import java.util.List;
  * Category query service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.1.1, Apr 12, 2017
+ * @version 1.0.1.2, Aug 27, 2018
  * @since 2.0.0
  */
 @Service
@@ -84,7 +84,7 @@ public class CategoryQueryService {
                 addSort(Keys.OBJECT_ID, SortDirection.DESCENDING).
                 setPageSize(fetchSize).setPageCount(1);
         try {
-            final List<JSONObject> ret = CollectionUtils.jsonArrayToList(categoryRepository.get(query).optJSONArray(Keys.RESULTS));
+            final List<JSONObject> ret = categoryRepository.getList(query);
             for (final JSONObject category : ret) {
                 final List<JSONObject> tags = getTags(category.optString(Keys.OBJECT_ID));
 
@@ -106,14 +106,12 @@ public class CategoryQueryService {
      * @return tags, returns an empty list if not found
      */
     public List<JSONObject> getTags(final String categoryId) {
-        final List<JSONObject> ret = new ArrayList<JSONObject>();
+        final List<JSONObject> ret = new ArrayList<>();
 
         final Query query = new Query().
                 setFilter(new PropertyFilter(Category.CATEGORY + "_" + Keys.OBJECT_ID, FilterOperator.EQUAL, categoryId));
         try {
-            final List<JSONObject> relations = CollectionUtils.jsonArrayToList(
-                    categoryTagRepository.get(query).optJSONArray(Keys.RESULTS));
-
+            final List<JSONObject> relations = categoryTagRepository.getList(query);
             for (final JSONObject relation : relations) {
                 final String tagId = relation.optString(Tag.TAG + "_" + Keys.OBJECT_ID);
                 final JSONObject tag = tagRepository.get(tagId);

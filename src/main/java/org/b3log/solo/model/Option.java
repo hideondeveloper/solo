@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,17 +17,19 @@
  */
 package org.b3log.solo.model;
 
+import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.Keys;
-import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.util.Set;
 
 /**
  * This class defines option model relevant keys.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.3.0.7, Aug 10, 2018
+ * @version 1.4.0.0, Dec 10, 2018
  * @since 0.6.0
  */
 public final class Option {
@@ -53,6 +55,11 @@ public final class Option {
     public static final String OPTION_CATEGORY = "optionCategory";
 
     // oId constants
+    /**
+     * Key of custom vars.
+     */
+    public static final String ID_C_CUSTOM_VARS = "customVars";
+
     /**
      * Key of broadcast chance expiration time.
      */
@@ -306,6 +313,11 @@ public final class Option {
      */
     public static final String ID_C_STATISTIC_PUBLISHED_ARTICLE_COUNT = "statisticPublishedBlogArticleCount";
 
+    /**
+     * Key of oauth GitHub.
+     */
+    public static final String ID_C_OAUTH_GITHUB = "oauthGitHub";
+
     // Category constants
     /**
      * Broadcast.
@@ -328,6 +340,21 @@ public final class Option {
     public static final String CATEGORY_C_STATISTIC = "statistic";
 
     /**
+     * OAuth.
+     */
+    public static final String CATEGORY_C_OAUTH = "oauth";
+
+    public static String getOAuthPair(final Set<String> oauthPairs, final String openIdOrUserId) {
+        for (final String pair : oauthPairs) {
+            if (StringUtils.containsIgnoreCase(pair, openIdOrUserId)) {
+                return pair;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Private constructor.
      */
     private Option() {
@@ -337,10 +364,15 @@ public final class Option {
      * Default preference.
      *
      * @author <a href="http://88250.b3log.org">Liang Ding</a>
-     * @version 2.1.0.9, Nov 23, 2015
+     * @version 2.2.0.0, Dec 10, 2018
      * @since 0.3.1
      */
     public static final class DefaultPreference {
+
+        /**
+         * Default custom vars.
+         */
+        public static final String DEFAULT_CUSTOM_VARS = "key0=val0|key1=val1|key2=val2";
 
         /**
          * Default recent article display count.
@@ -380,7 +412,7 @@ public final class Option {
         /**
          * Default skin directory name.
          */
-        public static final String DEFAULT_SKIN_DIR_NAME = "Medium";
+        public static final String DEFAULT_SKIN_DIR_NAME = "Jane";
 
         /**
          * Default language.
@@ -457,7 +489,7 @@ public final class Option {
         /**
          * Default allow register.
          */
-        public static final String DEFAULT_ALLOW_REGISTER = "false";
+        public static final String DEFAULT_ALLOW_REGISTER = "true";
 
         /**
          * Default allow comment article/page.
@@ -503,32 +535,26 @@ public final class Option {
             final JSONArray signs = new JSONArray();
             final int signLength = 4;
 
-            try {
-                for (int i = 0; i < signLength; i++) {
-                    final JSONObject sign = new JSONObject();
-                    sign.put(Keys.OBJECT_ID, i);
-                    signs.put(sign);
-                    sign.put(Sign.SIGN_HTML, "");
-                }
-
-                // Sign(id=0) is the 'empty' sign, used for article user needn't a sign
-                DEFAULT_SIGNS = signs.toString();
-
-                final JSONObject replyNotificationTemplate = new JSONObject();
-                replyNotificationTemplate.put("subject", "${blogTitle}: New reply of your comment");
-                replyNotificationTemplate.put("body",
-                        "Your comment on post[<a href='${postLink}'>" + "${postTitle}</a>] received an reply: <p>${replier}"
-                                + ": <span><a href='${replyURL}'>${replyContent}</a></span></p>");
-                DEFAULT_REPLY_NOTIFICATION_TEMPLATE = replyNotificationTemplate.toString();
-            } catch (final Exception e) {
-                LOGGER.log(Level.ERROR, "Creates sign error!", e);
-
-                throw new IllegalStateException(e);
+            for (int i = 0; i < signLength; i++) {
+                final JSONObject sign = new JSONObject();
+                sign.put(Keys.OBJECT_ID, i);
+                signs.put(sign);
+                sign.put(Sign.SIGN_HTML, "");
             }
+
+            // Sign(id=0) is the 'empty' sign, used for article user needn't a sign
+            DEFAULT_SIGNS = signs.toString();
+
+            final JSONObject replyNotificationTemplate = new JSONObject();
+            replyNotificationTemplate.put("subject", "${blogTitle}: New reply of your comment");
+            replyNotificationTemplate.put("body",
+                    "Your comment on post[<a href='${postLink}'>" + "${postTitle}</a>] received an reply: <p>${replier}"
+                            + ": <span><a href='${replyURL}'>${replyContent}</a></span></p>");
+            DEFAULT_REPLY_NOTIFICATION_TEMPLATE = replyNotificationTemplate.toString();
         }
 
         /**
-         * Private default constructor.
+         * Private constructor.
          */
         private DefaultPreference() {
         }

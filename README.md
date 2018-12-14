@@ -1,4 +1,4 @@
-# <img src="https://cloud.githubusercontent.com/assets/873584/26024695/4defcb5e-3809-11e7-9755-fa4d22c45718.png"> [Solo](https://github.com/b3log/solo) [![Build Status](https://img.shields.io/travis/b3log/solo.svg?style=flat)](https://travis-ci.org/b3log/solo) [![Coverage Status](https://img.shields.io/coveralls/b3log/solo.svg?style=flat)](https://coveralls.io/github/b3log/solo?branch=master)  [![AGPLv3](http://img.shields.io/badge/license-AGPLv3-orange.svg?style=flat)](https://www.gnu.org/licenses/agpl-3.0.txt) [![Download](http://img.shields.io/badge/download-14K+-blue.svg?style=flat)](https://pan.baidu.com/s/1dzk7SU) 
+# <img src="https://cloud.githubusercontent.com/assets/873584/26024695/4defcb5e-3809-11e7-9755-fa4d22c45718.png"> [Solo](https://github.com/b3log/solo) [![Build Status](https://img.shields.io/travis/b3log/solo.svg?style=flat)](https://travis-ci.org/b3log/solo) [![Coverage Status](https://img.shields.io/coveralls/b3log/solo.svg?style=flat)](https://coveralls.io/github/b3log/solo?branch=master)  [![AGPLv3](http://img.shields.io/badge/license-AGPLv3-orange.svg?style=flat)](https://www.gnu.org/licenses/agpl-3.0.txt)
 
 ## 简介
 
@@ -16,6 +16,8 @@
 * [1992 社区](https://1992.cool)
 * [何遇](http://littleq.cn)
 * [Relyn](http://relyn.cn)
+* [Neverland](https://muz1.xyz)
+* [思干豆](http://sigandou.com)
 
 ## 功能 
 
@@ -41,7 +43,8 @@
 * Atom / RSS 订阅
 * Sitemap
 * MetaWeblog API
-* CDN 静态资源分离 
+* CDN 静态资源分离
+* [GitHub 集成](https://github.com/b3log/solo/issues/12514)
 
 ## 界面
 
@@ -59,7 +62,7 @@
 
 ## 安装
 
-[下载](https://pan.baidu.com/s/1dzk7SU)最新的 Solo 包解压，进入解压目录执行：
+[下载](https://github.com/b3log/solo/releases)最新的 Solo 包解压，进入解压目录执行：
 
 * Windows: `java -cp "WEB-INF/lib/*;WEB-INF/classes" org.b3log.solo.Starter`
 * Unix-like: `java -cp "WEB-INF/lib/*:WEB-INF/classes" org.b3log.solo.Starter`
@@ -72,15 +75,17 @@
 
 ## 文档
 
+* [《提问的智慧》精读注解版](https://hacpai.com/article/1536377163156)
 * [用户指南](https://hacpai.com/article/1492881378588)
-* [开发指南](https://hacpai.com/article/1493822943172)
+* [Solo 从设计到实现](https://hacpai.com/article/1537690756242)
+* [贡献指南](https://github.com/b3log/solo/blob/master/CONTRIBUTING.md)
 * [皮肤开发](https://hacpai.com/article/1493814851007)
 * [插件开发](https://docs.google.com/document/pub?id=15H7Q3EBo-44v61Xp_epiYY7vK_gPJLkQaT7T1gkE64w&pli=1)
 
 ## 社区
 
-* [讨论区](https://hacpai.com/tag/Solo)
-* [报告问题](https://github.com/b3log/solo/issues/new)
+* [讨论区](https://hacpai.com/tag/solo)
+* [报告问题](https://github.com/b3log/solo/issues/new/choose)
 
 ## 授权
 

@@ -1,6 +1,6 @@
 <#--
 
-    Solo - A beautiful, simple, stable, fast Java blogging system.
+    Solo - A small and beautiful blogging system written in Java.
     Copyright (c) 2010-2018, b3log.org & hacpai.com
 
     This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 <div class="clear"></div>
 <div class="form form__no-table">
 ${addUserLabel}
-    <label for="userName">${commentName1Label}</label>
+    <label for="userName">${userName1Label}</label>
     <input id="userName" type="text"/>
     <label for="userEmail">${commentEmail1Label}</label>
     <input id="userEmail" type="text"/>
@@ -37,9 +37,8 @@ ${addUserLabel}
     <button onclick="admin.userList.add();" class="right">${saveLabel}</button>
     <div class="clear"></div>
 </div>
-<div id="userUpdate" class="none form form__table">
-${updateUserLabel}
-    <label for="userNameUpdate">${commentName1Label}</label>
+<div id="userUpdate" class="none form form__no-table">
+    <label for="userNameUpdate">${userName1Label}</label>
     <input id="userNameUpdate" type="text"/>
     <label for="userEmailUpdate">${commentEmail1Label}</label>
     <input id="userEmailUpdate" type="text"/>

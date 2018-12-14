@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,28 +17,27 @@
  */
 package org.b3log.solo.cache;
 
-import org.b3log.latke.cache.Cache;
-import org.b3log.latke.cache.CacheFactory;
-import org.b3log.latke.ioc.inject.Named;
-import org.b3log.latke.ioc.inject.Singleton;
+import org.b3log.latke.ioc.Singleton;
 import org.b3log.solo.model.Option;
 import org.json.JSONObject;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Statistic cache.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.0, Sep 6, 2017
+ * @version 1.0.0.1, Sep 25, 2018
  * @since 2.4.0
  */
-@Named
 @Singleton
 public class StatisticCache {
 
     /**
      * Statistic cache.
      */
-    private Cache cache = CacheFactory.getCache(Option.CATEGORY_C_STATISTIC);
+    private final Map<String, JSONObject> cache = new ConcurrentHashMap<>();
 
     /**
      * Get the statistic.
@@ -59,9 +58,9 @@ public class StatisticCache {
     }
 
     /**
-     * Clears the statistic.
+     * Clears all cached data.
      */
     public void clear() {
-        cache.removeAll();
+        cache.clear();
     }
 }

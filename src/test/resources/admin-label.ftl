@@ -1,6 +1,6 @@
 <#--
 
-    Solo - A beautiful, simple, stable, fast Java blogging system.
+    Solo - A small and beautiful blogging system written in Java.
     Copyright (c) 2010-2018, b3log.org & hacpai.com
 
     This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,8 @@
 <script type="text/javascript">
     var latkeConfig = {
       "staticServePath": "${staticServePath}",
-      "servePath": "${servePath}"
+      "servePath": "${servePath}",
+      "isLoggedIn": "true"
     };
     
     var Label = {
@@ -53,6 +54,7 @@
         "tagsLabel": "${tagsLabel}",
         "authorLabel": "${authorLabel}",
         "createDateLabel": "${createDateLabel}",
+        "dateLabel": "${dateLabel}",
         "previousPageLabel": "${previousPageLabel}",
         "pageLabel": "${pageLabel}",
         "nextPagePabel": "${nextPagePabel}",
@@ -135,7 +137,21 @@
         "userLabel": "${userLabel}",
         "changeRoleLabel": "${changeRoleLabel}",
         "visitorUserLabel": "${visitorUserLabel}",
-        "autoSaveLabel": "${autoSaveLabel}"
+        "categoryTooLongLabel": "${categoryTooLongLabel}",
+        "descriptionLabel": "${descriptionLabel}",
+        "autoSaveLabel": "${autoSaveLabel}",
+        "addBoldLabel": '${addBoldLabel}',
+        "addItalicLabel": '${addItalicLabel}',
+        "insertQuoteLabel": '${insertQuoteLabel}',
+        "addBulletedLabel": '${addBulletedLabel}',
+        "addNumberedListLabel": '${addNumberedListLabel}',
+        "addLinkLabel": '${addLinkLabel}',
+        "undoLabel": '${undoLabel}',
+        "redoLabel": '${redoLabel}',
+        "previewLabel": '${previewLabel}',
+        "helpLabel": '${helpLabel}',
+        "fullscreenLabel": '${fullscreenLabel}',
+        "uploadFilesLabel": '${uploadFilesLabel}'
     };    
     
     admin.init();

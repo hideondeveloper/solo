@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,24 +17,20 @@
  */
 package org.b3log.solo.processor;
 
-
 import freemarker.template.Template;
-import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.Keys;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.service.LangPropsService;
-import org.b3log.latke.servlet.HTTPRequestContext;
-import org.b3log.latke.servlet.HTTPRequestMethod;
+import org.b3log.latke.servlet.HttpMethod;
+import org.b3log.latke.servlet.RequestContext;
 import org.b3log.latke.servlet.annotation.RequestProcessing;
 import org.b3log.latke.servlet.annotation.RequestProcessor;
-import org.b3log.latke.servlet.renderer.freemarker.AbstractFreeMarkerRenderer;
+import org.b3log.latke.servlet.renderer.AbstractFreeMarkerRenderer;
 import org.b3log.latke.util.Locales;
-import org.b3log.latke.util.freemarker.Templates;
 import org.b3log.solo.model.Option;
-import org.b3log.solo.processor.renderer.SkinRenderer;
-import org.b3log.solo.processor.util.Filler;
+import org.b3log.solo.service.DataModelService;
 import org.b3log.solo.service.PreferenceQueryService;
 import org.b3log.solo.service.StatisticMgmtService;
 import org.b3log.solo.util.Skins;
@@ -42,9 +38,7 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.Map;
-
 
 /**
  * User template processor.
@@ -53,12 +47,8 @@ import java.util.Map;
  * User can add a template (for example "links.ftl") then visits the page ("links.html").
  * </p>
  *
- * <p>
- * See <a href="https://code.google.com/p/b3log-solo/issues/detail?id=409">issue 409</a> for more details.
- * </p>
- *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.6, Jun 22, 2018
+ * @version 1.0.0.9, Dec 3, 2018
  * @since 0.4.5
  */
 @RequestProcessor
@@ -70,10 +60,10 @@ public class UserTemplateProcessor {
     private static final Logger LOGGER = Logger.getLogger(ArticleProcessor.class);
 
     /**
-     * Filler.
+     * DataModelService.
      */
     @Inject
-    private Filler filler;
+    private DataModelService dataModelService;
 
     /**
      * Preference query service.
@@ -96,59 +86,40 @@ public class UserTemplateProcessor {
     /**
      * Shows the user template page.
      *
-     * @param context  the specified context
-     * @param request  the specified HTTP servlet request
-     * @param response the specified HTTP servlet response
-     * @throws IOException io exception
+     * @param context the specified context
      */
-    @RequestProcessing(value = "/*.html", method = HTTPRequestMethod.GET)
-    public void showPage(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
-            throws IOException {
-        final String requestURI = request.getRequestURI();
-        String templateName = StringUtils.substringAfterLast(requestURI, "/");
+    @RequestProcessing(value = "/{name}.html", method = HttpMethod.GET)
+    public void showPage(final RequestContext context) {
+        final String requestURI = context.requestURI();
+        final String templateName = context.pathVar("name") + ".ftl";
+        LOGGER.log(Level.DEBUG, "Shows page [requestURI={0}, templateName={1}]", requestURI, templateName);
 
-        templateName = StringUtils.substringBefore(templateName, ".") + ".ftl";
-        LOGGER.log(Level.DEBUG, "Shows page[requestURI={0}, templateName={1}]", requestURI, templateName);
-
+        final HttpServletRequest request = context.getRequest();
+        final HttpServletResponse response = context.getResponse();
         final AbstractFreeMarkerRenderer renderer = new SkinRenderer(request);
-
         context.setRenderer(renderer);
         renderer.setTemplateName(templateName);
 
         final Map<String, Object> dataModel = renderer.getDataModel();
-
-        final Template template = Templates.getTemplate((String) request.getAttribute(Keys.TEMAPLTE_DIR_NAME), templateName);
-
+        final Template template = Skins.getSkinTemplate(request, templateName);
         if (null == template) {
-            try {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            context.sendError(HttpServletResponse.SC_NOT_FOUND);
 
-                return;
-            } catch (final IOException ex) {
-                LOGGER.error(ex.getMessage());
-            }
+            return;
         }
 
         try {
             final Map<String, String> langs = langPropsService.getAll(Locales.getLocale(request));
-
             dataModel.putAll(langs);
             final JSONObject preference = preferenceQueryService.getPreference();
-
-            filler.fillBlogHeader(request, response, dataModel, preference);
-            filler.fillUserTemplate(request, template, dataModel, preference);
-            filler.fillBlogFooter(request, dataModel, preference);
+            dataModelService.fillCommon(request, response, dataModel, preference);
+            dataModelService.fillUserTemplate(request, template, dataModel, preference);
             Skins.fillLangs(preference.optString(Option.ID_C_LOCALE_STRING), (String) request.getAttribute(Keys.TEMAPLTE_DIR_NAME), dataModel);
-
             statisticMgmtService.incBlogViewCount(request, response);
         } catch (final Exception e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            try {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            } catch (final IOException ex) {
-                LOGGER.error(ex.getMessage());
-            }
+            context.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
 }

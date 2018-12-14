@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,15 +18,18 @@
 package org.b3log.solo.util;
 
 import org.apache.commons.io.IOUtils;
+import org.b3log.latke.Latkes;
 import org.b3log.latke.util.Stopwatchs;
 import org.b3log.latke.util.Strings;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.io.FileInputStream;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * {@link org.b3log.solo.util.Markdowns} test case.
@@ -36,6 +39,12 @@ import java.util.List;
  * @since 0.4.5
  */
 public final class MarkdownsTestCase {
+
+    @BeforeClass
+    public void beforeClass() {
+        Latkes.init();
+        Latkes.setLocale(Locale.SIMPLIFIED_CHINESE);
+    }
 
     /**
      * Test method for {@linkplain Markdowns#toHTML(java.lang.String)}.
@@ -57,7 +66,7 @@ public final class MarkdownsTestCase {
         //System.out.println(path);
 
         final StringBuilder markdownTextBuilder = new StringBuilder();
-        @SuppressWarnings("unchecked") final List<String> lines = IOUtils.readLines(new FileInputStream(path));
+        final List<String> lines = IOUtils.readLines(new FileInputStream(path), "UTF-8");
 
         for (final String line : lines) {
             markdownTextBuilder.append(line).append(Strings.LINE_SEPARATOR);

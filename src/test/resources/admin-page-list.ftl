@@ -1,6 +1,6 @@
 <#--
 
-    Solo - A beautiful, simple, stable, fast Java blogging system.
+    Solo - A small and beautiful blogging system written in Java.
     Copyright (c) 2010-2018, b3log.org & hacpai.com
 
     This program is free software: you can redistribute it and/or modify
@@ -34,6 +34,10 @@
         <input id="pagePermalink" type="text"/>
     </div>
     <div>
+        <label>${icon1Label}</label>
+        <input id="pageIcon" type="text"/>
+    </div>
+    <div>
         <label>${openMethod1Label}</label>
         <select id="pageTarget">
             <option value="_self">${targetSelfLabel}</option>
@@ -41,7 +45,7 @@
             <option value="_parent">${targetParentLabel}</option>
             <option value="_top">${targetTopLabel}</option>
         </select>&nbsp;&nbsp;&nbsp;&nbsp;
-        <label>${type1Label}</label>
+        <label class="page-list__label">${type1Label}</label>
         <button data-type="link" class="selected fn-type">${pageLinkLabel}</button>
         <button data-type="page" class="fn-type">${pageLabel}</button>
     </div>

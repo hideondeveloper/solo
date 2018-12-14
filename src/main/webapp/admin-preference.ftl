@@ -1,6 +1,6 @@
 <#--
 
-    Solo - A beautiful, simple, stable, fast Java blogging system.
+    Solo - A small and beautiful blogging system written in Java.
     Copyright (c) 2010-2018, b3log.org & hacpai.com
 
     This program is free software: you can redistribute it and/or modify
@@ -129,7 +129,9 @@
             <option value="fullContent">${fullContentLabel}</option>
         </select>
         <label for="feedOutputCnt">${feedOutputCnt1Label}</label>
-        <input id="feedOutputCnt" class="normalInput" type="text"/><br/><br/>
+        <input id="feedOutputCnt" class="normalInput" type="text"/>
+        <label for="customVars">${customVars1Label}</label>
+        <input id="customVars" class="normalInput" type="text"/><br/><br/>
         <button class="right" onclick="admin.preference.update()">${updateLabel}</button>
         <div class="clear"></div>
     </div>

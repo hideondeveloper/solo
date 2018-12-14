@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
  *
  * @author <a href="http://vanessa.b3log.org">Liyuan Li</a>
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.2.1, Apr 5, 2018
+ * @version 1.1.3.1, Oct 24, 2018
  * @since 2.0.0
  */
 
@@ -61,6 +61,7 @@ admin.categoryList = {
         this.getList(page);
 
         $("#categoryUpdate").dialog({
+            title: $("#categoryUpdate").data('title'),
             width: 700,
             height: 358,
             "modal": true,
@@ -152,7 +153,7 @@ admin.categoryList = {
                     categoryData[i].expendRow = "<a href='javascript:void(0)' onclick=\"admin.categoryList.get('" +
                             categories[i].oId + "')\">" + Label.updateLabel + "</a>\
                             <a href='javascript:void(0)' onclick=\"admin.categoryList.del('" + categories[i].oId + "', '" +
-                            categories[i].categoryTitle + "')\">" + Label.removeLabel + "</a> ";
+                            encodeURIComponent(categories[i].categoryTitle) + "')\">" + Label.removeLabel + "</a> ";
 
                 }
                 that.tablePagination.updateTablePagination(categoryData, pageNum, result.pagination);
@@ -278,7 +279,7 @@ admin.categoryList = {
      * @categoryName 分类名称
      */
     del: function(id, categoryName) {
-        var isDelete = confirm(Label.confirmRemoveLabel + Label.categoryLabel + '"' + categoryName + '"?');
+        var isDelete = confirm(Label.confirmRemoveLabel + Label.categoryLabel + '"' + Util.htmlDecode(categoryName) + '"?');
         if (isDelete) {
             $("#loadMsg").text(Label.loadingLabel);
             $("#tipMsg").text("");

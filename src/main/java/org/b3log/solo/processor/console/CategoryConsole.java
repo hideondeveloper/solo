@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,32 +17,31 @@
  */
 package org.b3log.solo.processor.console;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.Keys;
 import org.b3log.latke.Latkes;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.service.LangPropsService;
 import org.b3log.latke.service.ServiceException;
-import org.b3log.latke.servlet.HTTPRequestContext;
-import org.b3log.latke.servlet.HTTPRequestMethod;
-import org.b3log.latke.servlet.annotation.RequestProcessing;
+import org.b3log.latke.servlet.RequestContext;
+import org.b3log.latke.servlet.annotation.Before;
 import org.b3log.latke.servlet.annotation.RequestProcessor;
-import org.b3log.latke.servlet.renderer.JSONRenderer;
-import org.b3log.latke.util.Requests;
+import org.b3log.latke.servlet.renderer.JsonRenderer;
+import org.b3log.latke.util.URLs;
 import org.b3log.solo.model.Category;
 import org.b3log.solo.model.Common;
 import org.b3log.solo.model.Tag;
 import org.b3log.solo.service.CategoryMgmtService;
 import org.b3log.solo.service.CategoryQueryService;
 import org.b3log.solo.service.TagQueryService;
-import org.b3log.solo.service.UserQueryService;
-import org.b3log.solo.util.QueryResults;
+import org.b3log.solo.util.Solos;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,10 +51,11 @@ import java.util.Set;
  * Category console request processing.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.1.2, Mar 3, 2018
+ * @version 1.1.3.3, Dec 10, 2018
  * @since 2.0.0
  */
 @RequestProcessor
+@Before(ConsoleAdminAuthAdvice.class)
 public class CategoryConsole {
 
     /**
@@ -76,12 +76,6 @@ public class CategoryConsole {
     private CategoryQueryService categoryQueryService;
 
     /**
-     * User query service.
-     */
-    @Inject
-    private UserQueryService userQueryService;
-
-    /**
      * Tag query service.
      */
     @Inject
@@ -96,6 +90,15 @@ public class CategoryConsole {
     /**
      * Changes a category order by the specified category id and direction.
      * <p>
+     * Request json:
+     * <pre>
+     * {
+     *     "oId": "",
+     *     "direction": "" // "up"/"down"
+     * }
+     * </pre>
+     * </p>
+     * <p>
      * Renders the response with a json object, for example,
      * <pre>
      * {
@@ -105,42 +108,27 @@ public class CategoryConsole {
      * </pre>
      * </p>
      *
-     * @param request           the specified http servlet request
-     * @param response          the specified http servlet response
-     * @param context           the specified http request context
-     * @param requestJSONObject the specified request json object, for example,
-     *                          "oId": "",
-     *                          "direction": "" // "up"/"down"
+     * @param context the specified http request context
      * @throws Exception exception
      */
-    @RequestProcessing(value = "/console/category/order/", method = HTTPRequestMethod.PUT)
-    public void changeOrder(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context,
-                            final JSONObject requestJSONObject) throws Exception {
-        if (!userQueryService.isAdminLoggedIn(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void changeOrder(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
-
         final JSONObject ret = new JSONObject();
         try {
-            final String categoryId = requestJSONObject.getString(Keys.OBJECT_ID);
-            final String direction = requestJSONObject.getString(Common.DIRECTION);
+            final JSONObject requestJSON = context.requestJSON();
+            final String categoryId = requestJSON.getString(Keys.OBJECT_ID);
+            final String direction = requestJSON.getString(Common.DIRECTION);
 
             categoryMgmtService.changeOrder(categoryId, direction);
 
             ret.put(Keys.STATUS_CODE, true);
             ret.put(Keys.MSG, langPropsService.get("updateSuccLabel"));
-
             renderer.setJSONObject(ret);
         } catch (final Exception e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
-
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, langPropsService.get("updateFailLabel"));
         }
@@ -163,29 +151,17 @@ public class CategoryConsole {
      * </pre>
      * </p>
      *
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @param context  the specified http request context
+     * @param context the specified http request context
      * @throws Exception exception
      */
-    @RequestProcessing(value = "/console/category/*", method = HTTPRequestMethod.GET)
-    public void getCategory(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context)
-            throws Exception {
-        if (!userQueryService.isAdminLoggedIn(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void getCategory(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
         try {
-            final String requestURI = request.getRequestURI();
-            final String categoryId = requestURI.substring((Latkes.getContextPath() + "/console/category/").length());
-
+            final String categoryId = context.pathVar("id");
             final JSONObject result = categoryQueryService.getCategory(categoryId);
             if (null == result) {
-                renderer.setJSONObject(QueryResults.defaultResult());
+                renderer.setJSONObject(new JSONObject().put(Keys.STATUS_CODE, false));
 
                 return;
             }
@@ -203,7 +179,7 @@ public class CategoryConsole {
         } catch (final ServiceException e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, langPropsService.get("getFailLabel"));
         }
@@ -221,26 +197,16 @@ public class CategoryConsole {
      * </pre>
      * </p>
      *
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @param context  the specified http request context
+     * @param context the specified http request context
      * @throws Exception exception
      */
-    @RequestProcessing(value = "/console/category/*", method = HTTPRequestMethod.DELETE)
-    public void removeCategory(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context)
-            throws Exception {
-        if (!userQueryService.isAdminLoggedIn(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void removeCategory(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
-
         final JSONObject jsonObject = new JSONObject();
         renderer.setJSONObject(jsonObject);
         try {
-            final String categoryId = request.getRequestURI().substring((Latkes.getContextPath() + "/console/category/").length());
+            final String categoryId = context.pathVar("id");
             categoryMgmtService.removeCategory(categoryId);
 
             jsonObject.put(Keys.STATUS_CODE, true);
@@ -256,6 +222,18 @@ public class CategoryConsole {
     /**
      * Updates a category by the specified request.
      * <p>
+     * Request json:
+     * <pre>
+     * {
+     *     "oId": "",
+     *     "categoryTitle": "",
+     *     "categoryURI": "", // optional
+     *     "categoryDescription": "", // optional
+     *     "categoryTags": "tag1, tag2" // optional
+     * }
+     * </pre>
+     * </p>
+     * <p>
      * Renders the response with a json object, for example,
      * <pre>
      * {
@@ -265,37 +243,22 @@ public class CategoryConsole {
      * </pre>
      * </p>
      *
-     * @param request           the specified http servlet request
-     * @param context           the specified http request context
-     * @param response          the specified http servlet response
-     * @param requestJSONObject the specified request json object, for example,
-     *                          "oId": "",
-     *                          "categoryTitle": "",
-     *                          "categoryURI": "", // optional
-     *                          "categoryDescription": "", // optional
-     *                          "categoryTags": "tag1, tag2" // optional
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/category/", method = HTTPRequestMethod.PUT)
-    public void updateCategory(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context,
-                               final JSONObject requestJSONObject) throws Exception {
-        if (!userQueryService.isAdminLoggedIn(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void updateCategory(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
-
         final JSONObject ret = new JSONObject();
         renderer.setJSONObject(ret);
 
         try {
-            String tagsStr = requestJSONObject.optString(Category.CATEGORY_T_TAGS);
-            tagsStr = tagsStr.replaceAll("，", ",").replaceAll("、", ",");
+            final JSONObject requestJSON = context.requestJSON();
+            String tagsStr = requestJSON.optString(Category.CATEGORY_T_TAGS);
+            tagsStr = Tag.formatTags(tagsStr);
+            if (StringUtils.isBlank(tagsStr)) {
+                throw new ServiceException(langPropsService.get("tagsEmptyLabel"));
+            }
             final String[] tagTitles = tagsStr.split(",");
-
             String addArticleWithTagFirstLabel = langPropsService.get("addArticleWithTagFirstLabel");
 
             final List<JSONObject> tags = new ArrayList<>();
@@ -310,7 +273,7 @@ public class CategoryConsole {
                 if (null == tagResult) {
                     addArticleWithTagFirstLabel = addArticleWithTagFirstLabel.replace("{tag}", tagTitle);
 
-                    final JSONObject jsonObject = QueryResults.defaultResult();
+                    final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
                     renderer.setJSONObject(jsonObject);
                     jsonObject.put(Keys.MSG, addArticleWithTagFirstLabel);
 
@@ -325,33 +288,39 @@ public class CategoryConsole {
                 deduplicate.add(tagTitle);
             }
 
-            final String categoryId = requestJSONObject.optString(Keys.OBJECT_ID);
-
-            final String title = requestJSONObject.optString(Category.CATEGORY_TITLE, "Category");
+            final String categoryId = requestJSON.optString(Keys.OBJECT_ID);
+            final String title = requestJSON.optString(Category.CATEGORY_TITLE, "Category");
             JSONObject mayExist = categoryQueryService.getByTitle(title);
             if (null != mayExist && !mayExist.optString(Keys.OBJECT_ID).equals(categoryId)) {
-                final JSONObject jsonObject = QueryResults.defaultResult();
+                final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
                 renderer.setJSONObject(jsonObject);
                 jsonObject.put(Keys.MSG, langPropsService.get("duplicatedCategoryLabel"));
 
                 return;
             }
 
-            String uri = requestJSONObject.optString(Category.CATEGORY_URI, title);
+            String uri = requestJSON.optString(Category.CATEGORY_URI, title);
             if (StringUtils.isBlank(uri)) {
                 uri = title;
             }
-
+            uri = URLs.encode(uri);
             mayExist = categoryQueryService.getByURI(uri);
             if (null != mayExist && !mayExist.optString(Keys.OBJECT_ID).equals(categoryId)) {
-                final JSONObject jsonObject = QueryResults.defaultResult();
+                final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
                 renderer.setJSONObject(jsonObject);
                 jsonObject.put(Keys.MSG, langPropsService.get("duplicatedCategoryURILabel"));
 
                 return;
             }
+            if (255 <= StringUtils.length(uri)) {
+                final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
+                renderer.setJSONObject(jsonObject);
+                jsonObject.put(Keys.MSG, langPropsService.get("categoryURITooLongLabel"));
 
-            final String desc = requestJSONObject.optString(Category.CATEGORY_DESCRIPTION);
+                return;
+            }
+
+            final String desc = requestJSON.optString(Category.CATEGORY_DESCRIPTION);
 
             final JSONObject category = new JSONObject();
             category.put(Category.CATEGORY_TITLE, title);
@@ -376,7 +345,7 @@ public class CategoryConsole {
         } catch (final ServiceException e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, e.getMessage());
         }
@@ -384,6 +353,17 @@ public class CategoryConsole {
 
     /**
      * Adds a category with the specified request.
+     * <p>
+     * Request json:
+     * <pre>
+     * {
+     *     "categoryTitle": "",
+     *     "categoryURI": "", // optional
+     *     "categoryDescription": "", // optional
+     *     "categoryTags": "tag1, tag2" // optional
+     * }
+     * </pre>
+     * </p>
      * <p>
      * Renders the response with a json object, for example,
      * <pre>
@@ -395,37 +375,22 @@ public class CategoryConsole {
      * </pre>
      * </p>
      *
-     * @param request           the specified http servlet request
-     * @param response          the specified http servlet response
-     * @param context           the specified http request context
-     * @param requestJSONObject the specified request json object, for example,
-     *                          "categoryTitle": "",
-     *                          "categoryURI": "", // optional
-     *                          "categoryDescription": "", // optional
-     *                          "categoryTags": "tag1, tag2" // optional
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/category/", method = HTTPRequestMethod.POST)
-    public void addCategory(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context,
-                            final JSONObject requestJSONObject)
-            throws Exception {
-        if (!userQueryService.isAdminLoggedIn(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void addCategory(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
-
         final JSONObject ret = new JSONObject();
         renderer.setJSONObject(ret);
 
         try {
+            final JSONObject requestJSONObject = context.requestJSON();
             String tagsStr = requestJSONObject.optString(Category.CATEGORY_T_TAGS);
-            tagsStr = tagsStr.replaceAll("，", ",").replaceAll("、", ",");
+            tagsStr = Tag.formatTags(tagsStr);
+            if (StringUtils.isBlank(tagsStr)) {
+                throw new ServiceException(langPropsService.get("tagsEmptyLabel"));
+            }
             final String[] tagTitles = tagsStr.split(",");
-
             String addArticleWithTagFirstLabel = langPropsService.get("addArticleWithTagFirstLabel");
 
             final List<JSONObject> tags = new ArrayList<>();
@@ -440,7 +405,7 @@ public class CategoryConsole {
                 if (null == tagResult) {
                     addArticleWithTagFirstLabel = addArticleWithTagFirstLabel.replace("{tag}", tagTitle);
 
-                    final JSONObject jsonObject = QueryResults.defaultResult();
+                    final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
                     renderer.setJSONObject(jsonObject);
                     jsonObject.put(Keys.MSG, addArticleWithTagFirstLabel);
 
@@ -458,7 +423,7 @@ public class CategoryConsole {
             final String title = requestJSONObject.optString(Category.CATEGORY_TITLE, "Category");
             JSONObject mayExist = categoryQueryService.getByTitle(title);
             if (null != mayExist) {
-                final JSONObject jsonObject = QueryResults.defaultResult();
+                final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
                 renderer.setJSONObject(jsonObject);
                 jsonObject.put(Keys.MSG, langPropsService.get("duplicatedCategoryLabel"));
 
@@ -469,12 +434,19 @@ public class CategoryConsole {
             if (StringUtils.isBlank(uri)) {
                 uri = title;
             }
-
+            uri = URLs.encode(uri);
             mayExist = categoryQueryService.getByURI(uri);
             if (null != mayExist) {
-                final JSONObject jsonObject = QueryResults.defaultResult();
+                final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
                 renderer.setJSONObject(jsonObject);
                 jsonObject.put(Keys.MSG, langPropsService.get("duplicatedCategoryURILabel"));
+
+                return;
+            }
+            if (255 <= StringUtils.length(uri)) {
+                final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
+                renderer.setJSONObject(jsonObject);
+                jsonObject.put(Keys.MSG, langPropsService.get("categoryURITooLongLabel"));
 
                 return;
             }
@@ -502,7 +474,7 @@ public class CategoryConsole {
         } catch (final ServiceException e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, e.getMessage());
         }
@@ -533,37 +505,32 @@ public class CategoryConsole {
      * </pre>
      * </p>
      *
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @param context  the specified http request context
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/categories/*/*/*"/* Requests.PAGINATION_PATH_PATTERN */, method = HTTPRequestMethod.GET)
-    public void getCategories(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context)
-            throws Exception {
-        if (!userQueryService.isAdminLoggedIn(request)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void getCategories(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
 
         try {
+            final HttpServletRequest request = context.getRequest();
             final String requestURI = request.getRequestURI();
             final String path = requestURI.substring((Latkes.getContextPath() + "/console/categories/").length());
-
-            final JSONObject requestJSONObject = Requests.buildPaginationRequest(path);
-
+            final JSONObject requestJSONObject = Solos.buildPaginationRequest(path);
             final JSONObject result = categoryQueryService.getCategoris(requestJSONObject);
-
             result.put(Keys.STATUS_CODE, true);
             renderer.setJSONObject(result);
+
+            final JSONArray categories = result.optJSONArray(Category.CATEGORIES);
+            for (int i = 0; i < categories.length(); i++) {
+                final JSONObject category = categories.optJSONObject(i);
+                String title = category.optString(Category.CATEGORY_TITLE);
+                title = StringEscapeUtils.escapeXml(title);
+                category.put(Category.CATEGORY_TITLE, title);
+            }
         } catch (final ServiceException e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, langPropsService.get("getFailLabel"));
         }

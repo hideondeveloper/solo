@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,7 +20,7 @@
  *
  * @author <a href="http://vanessa.b3log.org">Liyuan Li</a>
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.2.1.10, Nov 15, 2016
+ * @version 1.2.1.12, Dec 10, 2018
  */
 
 /* preference 相关操作 */
@@ -46,13 +46,13 @@ admin.preference = {
 
                 var preference = result.preference;
 
-                $("#metaKeywords").val(preference.metaKeywords),
-                        $("#metaDescription").val(preference.metaDescription),
-                        $("#blogTitle").val(preference.blogTitle),
-                        $("#blogSubtitle").val(preference.blogSubtitle),
-                        $("#mostCommentArticleDisplayCount").val(preference.mostCommentArticleDisplayCount);
-                $("#mostViewArticleDisplayCount").val(preference.mostViewArticleDisplayCount),
-                        $("#recentCommentDisplayCount").val(preference.recentCommentDisplayCount);
+                $("#metaKeywords").val(preference.metaKeywords);
+                $("#metaDescription").val(preference.metaDescription);
+                $("#blogTitle").val(preference.blogTitle);
+                $("#blogSubtitle").val(preference.blogSubtitle);
+                $("#mostCommentArticleDisplayCount").val(preference.mostCommentArticleDisplayCount);
+                $("#mostViewArticleDisplayCount").val(preference.mostViewArticleDisplayCount);
+                $("#recentCommentDisplayCount").val(preference.recentCommentDisplayCount);
                 $("#mostUsedTagDisplayCount").val(preference.mostUsedTagDisplayCount);
                 $("#articleListDisplayCount").val(preference.articleListDisplayCount);
                 $("#articleListPaginationWindowSize").val(preference.articleListPaginationWindowSize);
@@ -65,7 +65,8 @@ admin.preference = {
                 $("#relevantArticlesDisplayCount").val(preference.relevantArticlesDisplayCount);
                 $("#randomArticlesDisplayCount").val(preference.randomArticlesDisplayCount);
                 $("#keyOfSolo").val(preference.keyOfSolo);
-                
+                $("#customVars").val(preference.customVars);
+
                 "true" === preference.enableArticleUpdateHint ? $("#enableArticleUpdateHint").attr("checked", "checked") : $("#enableArticleUpdateHint").removeAttr("checked");
                 "true" === preference.allowVisitDraftViaPermalink ? $("#allowVisitDraftViaPermalink").attr("checked", "checked") : $("allowVisitDraftViaPermalink").removeAttr("checked");
                 "true" === preference.allowRegister ? $("#allowRegister").attr("checked", "checked") : $("#allowRegister").removeAttr("checked");
@@ -107,7 +108,7 @@ admin.preference = {
                 $("#editorType").val(preference.editorType);
                 $("#feedOutputMode").val(preference.feedOutputMode);
                 $("#feedOutputCnt").val(preference.feedOutputCnt);
-                
+
                 $("#loadMsg").text("");
             }
         });
@@ -130,7 +131,7 @@ admin.preference = {
             }
         });
     },
-    /* 
+    /*
      * @description 参数校验
      */
     validate: function () {
@@ -227,7 +228,8 @@ admin.preference = {
                 "feedOutputMode": $("#feedOutputMode").val(),
                 "feedOutputCnt": $("#feedOutputCnt").val(),
                 "commentable": $("#commentable").prop("checked"),
-                "allowRegister": $("#allowRegister").prop("checked")
+                "allowRegister": $("#allowRegister").prop("checked"),
+                "customVars": $("#customVars").val()
             }
         };
 
@@ -280,11 +282,7 @@ admin.preference = {
             cache: false,
             data: JSON.stringify(requestJSONObject),
             success: function (result, textStatus) {
-                if (result.sc) {
-                    window.location.reload();
-                }
-                
-                $("#tipMsg").text(result.msg);
+                $("#tipMsg").html(result.msg);
                 $("#loadMsg").text("");
             }
         });

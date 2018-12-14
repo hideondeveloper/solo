@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,9 +17,8 @@
  */
 package org.b3log.solo.service;
 
-
 import org.b3log.latke.Keys;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.repository.Transaction;
@@ -28,7 +27,6 @@ import org.b3log.latke.service.annotation.Service;
 import org.b3log.solo.model.Link;
 import org.b3log.solo.repository.LinkRepository;
 import org.json.JSONObject;
-
 
 /**
  * Link management service.
@@ -58,7 +56,7 @@ public class LinkMgmtService {
      * @throws ServiceException service exception
      */
     public void removeLink(final String linkId)
-        throws ServiceException {
+            throws ServiceException {
         final Transaction transaction = linkRepository.beginTransaction();
 
         try {
@@ -79,19 +77,19 @@ public class LinkMgmtService {
      * Updates a link by the specified request json object.
      *
      * @param requestJSONObject the specified request json object, for example,
-     * <pre>
-     * {
-     *     "link": {
-     *         "oId": "",
-     *         "linkTitle": "",
-     *         "linkAddress": ""
-     *     }
-     * }, see {@link Link} for more details
-     * </pre>
+     *                          <pre>
+     *                          {
+     *                              "link": {
+     *                                  "oId": "",
+     *                                  "linkTitle": "",
+     *                                  "linkAddress": ""
+     *                              }
+     *                          }, see {@link Link} for more details
+     *                          </pre>
      * @throws ServiceException service exception
      */
     public void updateLink(final JSONObject requestJSONObject)
-        throws ServiceException {
+            throws ServiceException {
         final Transaction transaction = linkRepository.beginTransaction();
 
         try {
@@ -116,15 +114,15 @@ public class LinkMgmtService {
     }
 
     /**
-     * Changes the order of a link specified by the given link id with the 
+     * Changes the order of a link specified by the given link id with the
      * specified direction.
      *
-     * @param linkId the given link id
+     * @param linkId    the given link id
      * @param direction the specified direction, "up"/"down"
      * @throws ServiceException service exception
      */
     public void changeOrder(final String linkId, final String direction)
-        throws ServiceException {
+            throws ServiceException {
         final Transaction transaction = linkRepository.beginTransaction();
 
         try {
@@ -169,22 +167,22 @@ public class LinkMgmtService {
 
     /**
      * Adds a link with the specified request json object.
-     * 
+     *
      * @param requestJSONObject the specified request json object, for example,
-     * <pre>
-     * {
-     *     "link": {
-     *         "linkTitle": "",
-     *         "linkAddress": "",
-     *         "linkDescription": "" // optional
-     *     }
-     * }, see {@link Link} for more details
-     * </pre>
+     *                          <pre>
+     *                          {
+     *                              "link": {
+     *                                  "linkTitle": "",
+     *                                  "linkAddress": "",
+     *                                  "linkDescription": "" // optional
+     *                              }
+     *                          }, see {@link Link} for more details
+     *                          </pre>
      * @return generated link id
      * @throws ServiceException service exception
      */
     public String addLink(final JSONObject requestJSONObject)
-        throws ServiceException {
+            throws ServiceException {
         final Transaction transaction = linkRepository.beginTransaction();
 
         try {
@@ -209,7 +207,7 @@ public class LinkMgmtService {
 
     /**
      * Sets the link repository with the specified link repository.
-     * 
+     *
      * @param linkRepository the specified link repository
      */
     public void setLinkRepository(final LinkRepository linkRepository) {

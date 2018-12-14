@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,51 +17,41 @@
  */
 package org.b3log.solo.processor.console;
 
-
 import org.b3log.latke.Keys;
 import org.b3log.latke.Latkes;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.service.LangPropsService;
-import org.b3log.latke.servlet.HTTPRequestContext;
-import org.b3log.latke.servlet.HTTPRequestMethod;
-import org.b3log.latke.servlet.annotation.RequestProcessing;
+import org.b3log.latke.servlet.RequestContext;
+import org.b3log.latke.servlet.annotation.Before;
 import org.b3log.latke.servlet.annotation.RequestProcessor;
-import org.b3log.latke.servlet.renderer.JSONRenderer;
-import org.b3log.latke.util.Requests;
+import org.b3log.latke.servlet.renderer.JsonRenderer;
 import org.b3log.solo.model.Comment;
 import org.b3log.solo.service.CommentMgmtService;
 import org.b3log.solo.service.CommentQueryService;
-import org.b3log.solo.service.UserQueryService;
-import org.b3log.solo.util.QueryResults;
+import org.b3log.solo.util.Solos;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-
 /**
  * Comment console request processing.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.1, Feb 28, 2014
+ * @version 1.0.0.5, Dec 11, 2018
  * @since 0.4.0
  */
 @RequestProcessor
+@Before(ConsoleAuthAdvice.class)
 public class CommentConsole {
 
     /**
      * Logger.
      */
     private static final Logger LOGGER = Logger.getLogger(CommentConsole.class);
-
-    /**
-     * User query service.
-     */
-    @Inject
-    private UserQueryService userQueryService;
 
     /**
      * Comment query service.
@@ -93,28 +83,20 @@ public class CommentConsole {
      * </pre>
      * </p>
      *
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @param context  the specified http request context
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/page/comment/*", method = HTTPRequestMethod.DELETE)
-    public void removePageComment(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context)
-            throws Exception {
-        if (!userQueryService.isLoggedIn(request, response)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void removePageComment(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
         final JSONObject ret = new JSONObject();
         renderer.setJSONObject(ret);
 
         try {
-            final String commentId = request.getRequestURI().substring((Latkes.getContextPath() + "/console/page/comment/").length());
-
-            if (!commentQueryService.canAccessComment(commentId, request)) {
+            final HttpServletRequest request = context.getRequest();
+            final HttpServletResponse response = context.getResponse();
+            final String commentId = context.pathVar("id");
+            final JSONObject currentUser = Solos.getCurrentUser(request, response);
+            if (!commentQueryService.canAccessComment(commentId, currentUser)) {
                 ret.put(Keys.STATUS_CODE, false);
                 ret.put(Keys.MSG, langPropsService.get("forbiddenLabel"));
 
@@ -145,28 +127,20 @@ public class CommentConsole {
      * </pre>
      * </p>
      *
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @param context  the specified http request context
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/article/comment/*", method = HTTPRequestMethod.DELETE)
-    public void removeArticleComment(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context)
-            throws Exception {
-        if (!userQueryService.isLoggedIn(request, response)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void removeArticleComment(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
         final JSONObject ret = new JSONObject();
         renderer.setJSONObject(ret);
 
         try {
-            final String commentId = request.getRequestURI().substring((Latkes.getContextPath() + "/console/article/comment/").length());
-
-            if (!commentQueryService.canAccessComment(commentId, request)) {
+            final HttpServletRequest request = context.getRequest();
+            final HttpServletResponse response = context.getResponse();
+            final String commentId = context.pathVar("id");
+            final JSONObject currentUser = Solos.getCurrentUser(request, response);
+            if (!commentQueryService.canAccessComment(commentId, currentUser)) {
                 ret.put(Keys.STATUS_CODE, false);
                 ret.put(Keys.MSG, langPropsService.get("forbiddenLabel"));
 
@@ -216,28 +190,18 @@ public class CommentConsole {
      * </pre>
      * </p>
      *
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @param context  the specified http request context
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/comments/*/*/*"/* Requests.PAGINATION_PATH_PATTERN */,
-            method = HTTPRequestMethod.GET)
-    public void getComments(final HttpServletRequest request, final HttpServletResponse response, final HTTPRequestContext context)
-            throws Exception {
-        if (!userQueryService.isLoggedIn(request, response)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void getComments(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
 
         try {
+            final HttpServletRequest request = context.getRequest();
             final String requestURI = request.getRequestURI();
             final String path = requestURI.substring((Latkes.getContextPath() + "/console/comments/").length());
 
-            final JSONObject requestJSONObject = Requests.buildPaginationRequest(path);
+            final JSONObject requestJSONObject = Solos.buildPaginationRequest(path);
             final JSONObject result = commentQueryService.getComments(requestJSONObject);
 
             result.put(Keys.STATUS_CODE, true);
@@ -246,8 +210,7 @@ public class CommentConsole {
         } catch (final Exception e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
-
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, langPropsService.get("getFailLabel"));
         }
@@ -275,29 +238,16 @@ public class CommentConsole {
      * </pre>
      * </p>
      *
-     * @param context  the specified http request context
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/comments/article/*", method = HTTPRequestMethod.GET)
-    public void getArticleComments(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
-            throws Exception {
-        if (!userQueryService.isLoggedIn(request, response)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void getArticleComments(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
+        final JSONObject ret = new JSONObject();
+        renderer.setJSONObject(ret);
 
         try {
-            final JSONObject ret = new JSONObject();
-            renderer.setJSONObject(ret);
-
-            final String requestURI = request.getRequestURI();
-            final String articleId = requestURI.substring((Latkes.getContextPath() + "/console/comments/article/").length());
-
+            final String articleId = context.pathVar("id");
             final List<JSONObject> comments = commentQueryService.getComments(articleId);
 
             ret.put(Comment.COMMENTS, comments);
@@ -305,8 +255,7 @@ public class CommentConsole {
         } catch (final Exception e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
-
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, langPropsService.get("getFailLabel"));
         }
@@ -334,29 +283,16 @@ public class CommentConsole {
      * </pre>
      * </p>
      *
-     * @param context  the specified http request context
-     * @param request  the specified http servlet request
-     * @param response the specified http servlet response
-     * @throws Exception exception
+     * @param context the specified http request context
      */
-    @RequestProcessing(value = "/console/comments/page/*", method = HTTPRequestMethod.GET)
-    public void getPageComments(final HTTPRequestContext context, final HttpServletRequest request, final HttpServletResponse response)
-            throws Exception {
-        if (!userQueryService.isLoggedIn(request, response)) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN);
-            return;
-        }
-
-        final JSONRenderer renderer = new JSONRenderer();
+    public void getPageComments(final RequestContext context) {
+        final JsonRenderer renderer = new JsonRenderer();
         context.setRenderer(renderer);
+        final JSONObject ret = new JSONObject();
+        renderer.setJSONObject(ret);
 
         try {
-            final JSONObject ret = new JSONObject();
-            renderer.setJSONObject(ret);
-
-            final String requestURI = request.getRequestURI();
-            final String pageId = requestURI.substring((Latkes.getContextPath() + "/console/comments/page/").length());
-
+            final String pageId = context.pathVar("id");
             final List<JSONObject> comments = commentQueryService.getComments(pageId);
 
             ret.put(Comment.COMMENTS, comments);
@@ -364,8 +300,7 @@ public class CommentConsole {
         } catch (final Exception e) {
             LOGGER.log(Level.ERROR, e.getMessage(), e);
 
-            final JSONObject jsonObject = QueryResults.defaultResult();
-
+            final JSONObject jsonObject = new JSONObject().put(Keys.STATUS_CODE, false);
             renderer.setJSONObject(jsonObject);
             jsonObject.put(Keys.MSG, langPropsService.get("getFailLabel"));
         }

@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,12 @@
  */
 package org.b3log.solo.model;
 
-
 /**
  * This class defines all link model relevant keys.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
  * @version 1.0.0.2, Oct 31, 2011
- * @since  0.3.1
+ * @since 0.3.1
  */
 public final class Link {
 
@@ -58,7 +57,8 @@ public final class Link {
     public static final String LINK_ORDER = "linkOrder";
 
     /**
-     * Private default constructor.
+     * Private constructor.
      */
-    private Link() {}
+    private Link() {
+    }
 }

@@ -1,6 +1,6 @@
 <#--
 
-    Solo - A beautiful, simple, stable, fast Java blogging system.
+    Solo - A small and beautiful blogging system written in Java.
     Copyright (c) 2010-2018, b3log.org & hacpai.com
 
     This program is free software: you can redistribute it and/or modify
@@ -18,7 +18,6 @@
 
 -->
 <link type="text/css" rel="stylesheet" href="https://static-solo.b3log.org/plugins/kanbanniang/assert/index.css"/>
-<script src="https://static-solo.b3log.org/plugins/kanbanniang/assert/live2d.js"></script>
 <script async src="https://static-solo.b3log.org/plugins/kanbanniang/assert/index.js"></script>
 <div class="solo-kanbanniang">
     <div class="solo-kanbanniang__tip"></div>

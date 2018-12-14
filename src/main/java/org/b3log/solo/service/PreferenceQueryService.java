@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,11 @@
  */
 package org.b3log.solo.service;
 
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
-import org.b3log.latke.repository.RepositoryException;
 import org.b3log.latke.service.ServiceException;
 import org.b3log.latke.service.annotation.Service;
-import org.b3log.solo.cache.PreferenceCache;
 import org.b3log.solo.model.Option;
 import org.b3log.solo.repository.OptionRepository;
 import org.json.JSONObject;
@@ -32,7 +30,7 @@ import org.json.JSONObject;
  * Preference query service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.3, Jul 22, 2017
+ * @version 1.1.0.5, Nov 6, 2018
  * @since 0.4.0
  */
 @Service
@@ -54,12 +52,6 @@ public class PreferenceQueryService {
      */
     @Inject
     private OptionQueryService optionQueryService;
-
-    /**
-     * Preference cache.
-     */
-    @Inject
-    private PreferenceCache preferenceCache;
 
     /**
      * Gets the reply notification template.
@@ -86,23 +78,16 @@ public class PreferenceQueryService {
      * Gets the user preference.
      *
      * @return user preference, returns {@code null} if not found
-     * @throws ServiceException if repository exception
      */
-    public JSONObject getPreference() throws ServiceException {
+    public JSONObject getPreference() {
         try {
             final JSONObject checkInit = optionRepository.get(Option.ID_C_ADMIN_EMAIL);
             if (null == checkInit) {
                 return null;
             }
 
-            JSONObject ret = preferenceCache.getPreference();
-            if (null == ret) {
-                ret = optionQueryService.getOptions(Option.CATEGORY_C_PREFERENCE);
-                preferenceCache.putPreference(ret);
-            }
-
-            return ret;
-        } catch (final RepositoryException e) {
+            return optionQueryService.getOptions(Option.CATEGORY_C_PREFERENCE);
+        } catch (final Exception e) {
             return null;
         }
     }

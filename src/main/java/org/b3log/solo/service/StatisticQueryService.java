@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,11 @@
  */
 package org.b3log.solo.service;
 
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
+import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.service.ServiceException;
 import org.b3log.latke.service.annotation.Service;
-import org.b3log.solo.cache.StatisticCache;
 import org.b3log.solo.model.Option;
 import org.json.JSONObject;
 
@@ -29,7 +29,7 @@ import org.json.JSONObject;
  * Statistic query service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 2.0.0.0, Sep 6, 2017
+ * @version 2.0.0.1, Sep 19, 2018
  * @since 0.5.0
  */
 @Service
@@ -45,12 +45,6 @@ public class StatisticQueryService {
      */
     @Inject
     private OptionQueryService optionQueryService;
-
-    /**
-     * Statistic cache.
-     */
-    @Inject
-    private StatisticCache statisticCache;
 
     /**
      * Gets the online visitor count.
@@ -125,16 +119,15 @@ public class StatisticQueryService {
      * Gets the statistic.
      *
      * @return statistic, returns {@code null} if not found
-     * @throws ServiceException if repository exception
      */
-    public JSONObject getStatistic() throws ServiceException {
-        JSONObject ret = statisticCache.getStatistic();
-        if (null == ret) {
-            ret = optionQueryService.getOptions(Option.CATEGORY_C_STATISTIC);
-            statisticCache.putStatistic(ret);
-        }
+    public JSONObject getStatistic() {
+        try {
+            return optionQueryService.getOptions(Option.CATEGORY_C_STATISTIC);
+        } catch (final Exception e) {
+            LOGGER.log(Level.ERROR, "Gets statistic failed", e);
 
-        return ret;
+            return null;
+        }
     }
 
     /**

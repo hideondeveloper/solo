@@ -1,6 +1,6 @@
 <#--
 
-    Solo - A beautiful, simple, stable, fast Java blogging system.
+    Solo - A small and beautiful blogging system written in Java.
     Copyright (c) 2010-2018, b3log.org & hacpai.com
 
     This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,7 @@ ${addLinkLabel}
     <button onclick="admin.linkList.add();" class="right">${saveLabel}</button>
     <div class="clear"></div>
 </div>
-<div id="updateLink" class="none form form__no-table">
-${updateLinkLabel}
+<div id="updateLink" class="none form form__no-table" data-title="${updateLinkLabel}">
     <label>${linkTitle1Label}</label>
     <input id="linkTitleUpdate" type="text"/>
     <label>${url1Label}</label>

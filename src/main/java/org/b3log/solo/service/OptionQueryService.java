@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,24 +17,17 @@
  */
 package org.b3log.solo.service;
 
-import org.b3log.latke.Keys;
-import org.b3log.latke.ioc.inject.Inject;
-import org.b3log.latke.repository.FilterOperator;
-import org.b3log.latke.repository.PropertyFilter;
-import org.b3log.latke.repository.Query;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.repository.RepositoryException;
-import org.b3log.latke.service.ServiceException;
 import org.b3log.latke.service.annotation.Service;
-import org.b3log.solo.model.Option;
 import org.b3log.solo.repository.OptionRepository;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
  * Option query service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.1, Jul 22, 2017
+ * @version 1.0.0.3, Dec 3, 2018
  * @since 0.6.0
  */
 @Service
@@ -51,13 +44,12 @@ public class OptionQueryService {
      *
      * @param optionId the specified option id
      * @return an option, returns {@code null} if not found
-     * @throws ServiceException service exception
      */
-    public JSONObject getOptionById(final String optionId) throws ServiceException {
+    public JSONObject getOptionById(final String optionId) {
         try {
             return optionRepository.get(optionId);
         } catch (final RepositoryException e) {
-            throw new ServiceException(e);
+            return null;
         }
     }
 
@@ -75,30 +67,12 @@ public class OptionQueryService {
      *     ....
      * }
      * </pre>, returns {@code null} if not found
-     * @throws ServiceException service exception
      */
-    public JSONObject getOptions(final String category) throws ServiceException {
-        final Query query = new Query().
-                setFilter(new PropertyFilter(Option.OPTION_CATEGORY, FilterOperator.EQUAL, category));
-
+    public JSONObject getOptions(final String category) {
         try {
-            final JSONObject result = optionRepository.get(query);
-            final JSONArray options = result.getJSONArray(Keys.RESULTS);
-            if (0 == options.length()) {
-                return null;
-            }
-
-            final JSONObject ret = new JSONObject();
-
-            for (int i = 0; i < options.length(); i++) {
-                final JSONObject option = options.getJSONObject(i);
-
-                ret.put(option.getString(Keys.OBJECT_ID), option.opt(Option.OPTION_VALUE));
-            }
-
-            return ret;
+            return optionRepository.getOptions(category);
         } catch (final Exception e) {
-            throw new ServiceException(e);
+            return null;
         }
     }
 

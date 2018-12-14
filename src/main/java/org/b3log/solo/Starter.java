@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -39,7 +39,7 @@ import java.net.URI;
  * </ul>
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.1.0.12, Apr 5, 2018
+ * @version 1.1.0.14, Sep 23, 2018
  * @since 1.2.0
  */
 public final class Starter {
@@ -148,8 +148,6 @@ public final class Starter {
             Latkes.setRuntimeMode(Latkes.RuntimeMode.valueOf(runtimeMode));
         }
 
-        logger.info("Standalone mode, see https://github.com/b3log/solo/issues/12037 for more details.");
-
         String webappDirLocation = "src/main/webapp/"; // POM structure in dev env
         final File file = new File(webappDirLocation);
         if (!file.exists()) {
@@ -157,7 +155,6 @@ public final class Starter {
         }
 
         final int port = Integer.valueOf(portArg);
-
         final Server server = new Server(port);
         final WebAppContext root = new WebAppContext();
         root.setParentLoaderPriority(true); // Use parent class loader
@@ -165,7 +162,6 @@ public final class Starter {
         root.setDescriptor(webappDirLocation + "/WEB-INF/web.xml");
         root.setResourceBase(webappDirLocation);
         server.setHandler(root);
-
         try {
             server.start();
         } catch (final Exception e) {

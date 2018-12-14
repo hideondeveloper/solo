@@ -1,6 +1,6 @@
 <#--
 
-    Solo - A beautiful, simple, stable, fast Java blogging system.
+    Solo - A small and beautiful blogging system written in Java.
     Copyright (c) 2010-2018, b3log.org & hacpai.com
 
     This program is free software: you can redistribute it and/or modify
@@ -21,10 +21,8 @@
 
 <@commonPage "403 Forbidden!">
 <h2>403 Forbidden!</h2>
-<img class="img-error" src="${staticServePath}/images/403.png" alt="403: forbidden" title="403: forbidden" />
+<img class="img-error" src="${staticServePath}/images/403.png" alt="403" title="403 Forbidden!" />
 <div class="a-error">
-    Please
-    <a href="${loginURL}">Login</a>.
-    Return to <a href="${servePath}">Index</a> or <a href="https://hacpai.com">HacPai</a>.
+    Return to <a href="${servePath}">Index</a>.
 </div>
 </@commonPage>

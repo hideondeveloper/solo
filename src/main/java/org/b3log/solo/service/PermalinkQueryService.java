@@ -1,5 +1,5 @@
 /*
- * Solo - A beautiful, simple, stable, fast Java blogging system.
+ * Solo - A small and beautiful blogging system written in Java.
  * Copyright (c) 2010-2018, b3log.org & hacpai.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,9 @@
  */
 package org.b3log.solo.service;
 
+import org.apache.commons.lang.StringUtils;
 import org.b3log.latke.Latkes;
-import org.b3log.latke.ioc.inject.Inject;
+import org.b3log.latke.ioc.Inject;
 import org.b3log.latke.logging.Level;
 import org.b3log.latke.logging.Logger;
 import org.b3log.latke.repository.RepositoryException;
@@ -34,7 +35,7 @@ import java.util.regex.Pattern;
  * Permalink query service.
  *
  * @author <a href="http://88250.b3log.org">Liang Ding</a>
- * @version 1.0.0.3, Mar 11, 2018
+ * @version 1.0.0.5, Sep 26, 2018
  * @since 0.6.1
  */
 @Service
@@ -61,9 +62,8 @@ public class PermalinkQueryService {
      * Reserved permalinks.
      */
     public static final String[] RESERVED_LINKS = new String[]{
-            "/", "/article", "/tags.html", "/tags", "/page", "/blog-articles-feed.do", "/tag-articles-feed.do", "/blog-articles-rss.do",
-            "/tag-articles-rss.do", "/get-random-articles.do", "/article-random-double-gen.do", "/captcha.do", "/kill-browser",
-            "/add-article-comment.do", "/add-article-from-symphony-comment.do", "/add-page-comment.do", "/get-article-content", "/sitemap.xml",
+            "/", "/article", "/tags.html", "/tags", "/page", "/atom.xml", "/rss.xml", "/articles/random", "/captcha", "/kill-browser",
+            "/article/comments", "/add-article-from-symphony-comment.do", "/page/comments", "/get-article-content", "/sitemap.xml",
             "/login", "/logout", "/forgot", "/get-article-content", "/admin-index.do", "/admin-article.do", "/admin-article-list.do",
             "/admin-link-list.do", "/admin-preference.do", "/admin-file-list.do", "/admin-page-list.do", "/admin-others.do",
             "/admin-draft-list.do", "/admin-user-list.do", "/admin-plugin-list.do", "/admin-main.do", "/admin-about.do", "/admin-label",
@@ -114,7 +114,7 @@ public class PermalinkQueryService {
      * @return {@code true} if invalid, returns {@code false} otherwise
      */
     public static boolean invalidArticlePermalinkFormat(final String permalink) {
-        if (Strings.isEmptyOrNull(permalink)) {
+        if (StringUtils.isBlank(permalink)) {
             return true;
         }
 
@@ -132,7 +132,7 @@ public class PermalinkQueryService {
      * @return {@code true} if invalid, returns {@code false} otherwise
      */
     public static boolean invalidPagePermalinkFormat(final String permalink) {
-        if (Strings.isEmptyOrNull(permalink)) {
+        if (StringUtils.isBlank(permalink)) {
             return true;
         }
 
@@ -150,7 +150,7 @@ public class PermalinkQueryService {
      * @return {@code true} if invalid, returns {@code false} otherwise
      */
     private static boolean invalidUserDefinedPermalinkFormat(final String permalink) {
-        if (Strings.isEmptyOrNull(permalink)) {
+        if (StringUtils.isBlank(permalink)) {
             return true;
         }
 
@@ -159,7 +159,7 @@ public class PermalinkQueryService {
         }
 
         if (Strings.isNumeric(permalink.substring(1))) {
-            // See issue 120 (http://code.google.com/p/b3log-solo/issues/detail?id=120#c4) for more details
+            // Conflict with pagination
             return true;
         }
 
